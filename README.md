@@ -53,6 +53,8 @@ Readouts for units (S-class systems) are integrated but not tested yet. This add
 ### Known Bugs ###
 
 While making this plugin fit for Python 3 I encountered an old Python 2 style `print` in nvidia-ml-py's `pynvml.py` file. Line 1671 `print c_count.value` must be `print(c_count.value)`!
+You can do this fix on your own or use the fixed version from this repo.
+
 
 ### License ###
 
@@ -68,7 +70,7 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 ### Version ###
 
 v0.3 - potential bugs fixed
-     - fit for Python >=2.6 and >=3.3 (see known bugs section)
+     - fit for Python >=2.6 and >=3.2 (see known bugs section)
 
 v0.2 - code cleanup (thanks to @paulfantom for the feedback)
 
