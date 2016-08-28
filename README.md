@@ -10,7 +10,7 @@
 * Nvidia driver installed (this plugin needs the NVML library)
 * nvidia-ml-py Python package (Python NVML wrapper)
     - install via `pip install nvidia-ml-py`
-    - or copy `pynvml.py` and `nvidia_smi.py` from the "nvidia-ml-py" package (https://pypi.python.org/pypi/nvidia-ml-py/7.352.0) to `/usr/libexec/netdata/python.d/python_modules/`
+    - or copy `pynvml.py` from the "nvidia-ml-py" package (https://pypi.python.org/pypi/nvidia-ml-py/7.352.0) to `/usr/libexec/netdata/python.d/python_modules/`
 
 
 ### Installation ###
@@ -49,6 +49,11 @@ Readouts for units (S-class systems) are integrated but not tested yet. This add
 - PSU current, voltage and power
 - Fan rpm
 
+
+### Known Bugs ###
+
+While making this plugin fit for Python 3 I encountered an old Python 2 style `print` in nvidia-ml-py's `pynvml.py` file. Line 1671 `print c_count.value` must be `print(c_count.value)`!
+
 ### License ###
 
 The MIT License (MIT)
@@ -61,6 +66,9 @@ The above copyright notice and this permission notice shall be included in all c
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 ### Version ###
+
+v0.3 - potential bugs fixed
+     - fit for Python >=2.6 and >=3.3 (see known bugs section)
 
 v0.2 - code cleanup (thanks to @paulfantom for the feedback)
 

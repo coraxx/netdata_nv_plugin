@@ -5,7 +5,7 @@ NetData plugin for Nvidia GPU stats.
 
 Requirements:
 #	- Nvidia driver installed (this plugin needs the NVML library)
-#	- nvidia-ml-py Python package (Python NVML wrapper) installed or copy 'pynvml.py' and 'nvidia_smi.py'
+#	- nvidia-ml-py Python package (Python NVML wrapper) installed or copy the 'pynvml.py' file
 #	  from the 'nvidia-ml-py' package (https://pypi.python.org/pypi/nvidia-ml-py/7.352.0) to
 #	  '/usr/libexec/netdata/python.d/python_modules/'
 
@@ -37,13 +37,13 @@ DEALINGS IN THE SOFTWARE.
 # @Credits			:
 # @Maintainer		: Jan Arnold
 # @Date				: 2016/08/15
-# @Version			: 0.2
+# @Version			: 0.3
 # @Status			: stable
 # @Usage			: automatically processed by netdata
 # @Notes			: With default NetData installation put this file under
 #					: /usr/libexec/netdata/python.d/
 #					: and the config file under /etc/netdata/python.d/
-# @Python_version	: 2.7.11
+# @Python_version	: 2.7.12 and 3.5.2
 """
 # ======================================================================================================================
 from base import SimpleService
@@ -143,13 +143,12 @@ class Service(SimpleService):
 		name = ''
 		for i in range(self.deviceCount):
 			if i == 0:
-				name = name + data["device_name_" + str(i)] + " [{0}]".format(i)
+				name = name + str(data["device_name_" + str(i)]) + " [{0}]".format(i)
 			else:
-				name = name + ' | ' + data["device_name_" + str(i)] + " [{0}]".format(i)
+				name = name + ' | ' + str(data["device_name_" + str(i)]) + " [{0}]".format(i)
 		self.debug(name)
 		for chart in self.definitions:
 			self.definitions[chart]['options'][1] = self.definitions[chart]['options'][1] + ' for ' + name
-
 		## Dynamically add lines
 		for i in range(self.deviceCount):
 			gpuIdx = str(i)
@@ -307,13 +306,13 @@ class Service(SimpleService):
 				self.debug(str(name), "Temp      :", str(temp))
 				data["device_temp_" + gpuIdx] = temp
 
-				self.debug(str(name), "Mem total :", str(mem.total/1024**2), 'MB')
+				self.debug(str(name), "Mem total :", str(mem.total), 'bytes')
 				data["device_mem_total_" + gpuIdx] = mem.total
 
-				self.debug(str(name), "Mem used  :", str(mem.used/1024**2), 'MB')
+				self.debug(str(name), "Mem used  :", str(mem.used), 'bytes')
 				data["device_mem_used_" + gpuIdx] = mem.used
 
-				self.debug(str(name), "Mem free  :", str(mem.free/1024**2), 'MB')
+				self.debug(str(name), "Mem free  :", str(mem.free), 'bytes')
 				data["device_mem_free_" + gpuIdx] = mem.free
 
 				self.debug(str(name), "Load GPU  :", str(gpu_util), '%')
@@ -427,7 +426,7 @@ class Service(SimpleService):
 		## Get data via legacy mode
 		if self.legacy:
 			try:
-				output = Popen(
+				output = str(Popen(
 					[
 						"nvidia-settings",
 						"-q", "GPUUtilization",
@@ -436,9 +435,10 @@ class Service(SimpleService):
 						"-q", "TotalDedicatedGPUMemory",
 						"-q", "UsedDedicatedGPUMemory"
 					],
-					stdout=PIPE).communicate()[0]
+					stdout=PIPE).communicate()[0])
 				if output == '':
-					raise Exception('Error in fetching data from nvidia-settings '+output)
+					raise Exception('Error in fetching data from nvidia-settings ' + output)
+				self.debug(output)
 			except Exception as e:
 				self.error(str(e))
 				self.error('Setting legacy mode to False')
@@ -446,30 +446,47 @@ class Service(SimpleService):
 				return data
 			for i in range(self.deviceCount):
 				gpuIdx = str(i)
-				# self.debug(data["device_load_gpu_" + gpuIdx])
 				if data["device_temp_" + gpuIdx] is None:
-					coreTemp = findall('GPUCoreTemp.*(gpu:\d*).*:\s(\d*)', output)[i][1]
-					data["device_temp_" + gpuIdx] = int(coreTemp)
-					self.debug('Using legacy temp for GPU {0}: {1}'.format(gpuIdx, coreTemp))
+					coreTemp = findall('GPUCoreTemp.*?(gpu:\d*).*?\s(\d*)', output)[i][1]
+					try:
+						data["device_temp_" + gpuIdx] = int(coreTemp)
+						self.debug('Using legacy temp for GPU {0}: {1}'.format(gpuIdx, coreTemp))
+					except Exception as e:
+						self.debug(str(e), "skipping device_temp_" + gpuIdx)
 				if data["device_mem_used_" + gpuIdx] is None:
-					memUsed = findall('UsedDedicatedGPUMemory.*(gpu:\d*).*:\s(\d*)', output)[i][1]
-					data["device_mem_used_" + gpuIdx] = int(memUsed)
-					self.debug('Using legacy mem_used for GPU {0}: {1}'.format(gpuIdx, memUsed))
+					memUsed = findall('UsedDedicatedGPUMemory.*?(gpu:\d*).*?\s(\d*)', output)[i][1]
+					try:
+						data["device_mem_used_" + gpuIdx] = int(memUsed)
+						self.debug('Using legacy mem_used for GPU {0}: {1}'.format(gpuIdx, memUsed))
+					except Exception as e:
+						self.debug(str(e), "skipping device_mem_used_" + gpuIdx)
 				if data["device_load_gpu_" + gpuIdx] is None:
-					gpu_util = findall('(gpu:\d*).*graphics=(\d*),.*?memory=(\d*)', output)[i][1]
-					data["device_load_gpu_" + gpuIdx] = int(gpu_util)
-					self.debug('Using legacy load_gpu for GPU {0}: {1}'.format(gpuIdx, gpu_util))
+					gpu_util = findall('(gpu:\d*).*?graphics=(\d*),.*?memory=(\d*)', output)[i][1]
+					try:
+						data["device_load_gpu_" + gpuIdx] = int(gpu_util)
+						self.debug('Using legacy load_gpu for GPU {0}: {1}'.format(gpuIdx, gpu_util))
+					except Exception as e:
+						self.debug(str(e), "skipping device_load_gpu_" + gpuIdx)
 				if data["device_load_mem_" + gpuIdx] is None:
-					mem_util = findall('(gpu:\d*).*graphics=(\d*),.*?memory=(\d*)', output)[i][2]
-					data["device_load_mem_" + gpuIdx] = int(mem_util)
-					self.debug('Using legacy load_mem for GPU {0}: {1}'.format(gpuIdx, mem_util))
+					mem_util = findall('(gpu:\d*).*?graphics=(\d*),.*?memory=(\d*)', output)[i][2]
+					try:
+						data["device_load_mem_" + gpuIdx] = int(mem_util)
+						self.debug('Using legacy load_mem for GPU {0}: {1}'.format(gpuIdx, mem_util))
+					except Exception as e:
+						self.debug(str(e), "skipping device_load_mem_" + gpuIdx)
 				if data["device_core_clock_" + gpuIdx] is None:
-					clock_core = findall('GPUCurrentClockFreqs.*(gpu:\d*).*:\s(\d*),(\d*)', output)[i][1]
-					data["device_core_clock_" + gpuIdx] = int(clock_core)
-					self.debug('Using legacy core_clock for GPU {0}: {1}'.format(gpuIdx, clock_core))
+					clock_core = findall('GPUCurrentClockFreqs.*?(gpu:\d*).*?(\d*),(\d*)', output)[i][1]
+					try:
+						data["device_core_clock_" + gpuIdx] = int(clock_core)
+						self.debug('Using legacy core_clock for GPU {0}: {1}'.format(gpuIdx, clock_core))
+					except Exception as e:
+						self.debug(str(e), "skipping device_core_clock_" + gpuIdx)
 				if data["device_mem_clock_" + gpuIdx] is None:
-					clock_mem = findall('GPUCurrentClockFreqs.*(gpu:\d*).*:\s(\d*),(\d*)', output)[i][2]
-					data["device_mem_clock_" + gpuIdx] = int(clock_mem)
-					self.debug('Using legacy mem_clock for GPU {0}: {1}'.format(gpuIdx, clock_mem))
+					clock_mem = findall('GPUCurrentClockFreqs.*?(gpu:\d*).*?(\d*),(\d*)', output)[i][2]
+					try:
+						data["device_mem_clock_" + gpuIdx] = int(clock_mem)
+						self.debug('Using legacy mem_clock for GPU {0}: {1}'.format(gpuIdx, clock_mem))
+					except Exception as e:
+						self.debug(str(e), "skipping device_mem_clock_" + gpuIdx)
 
 		return data
