@@ -7,17 +7,19 @@
 
 ### Requirements ###
 
-* Nvidia driver installed (this plugin needs the NVML library)
+* Nvidia driver installed (this plugin uses the NVML library)
 * nvidia-ml-py Python package (Python NVML wrapper)
-    - install via `pip install nvidia-ml-py`
-    - or copy `pynvml.py` from the "nvidia-ml-py" package (https://pypi.python.org/pypi/nvidia-ml-py/7.352.0) to `/usr/libexec/netdata/python.d/python_modules/`
 
 
 ### Installation ###
 
+Install the nvidia-ml-py Python package via `pip install nvidia-ml-py` or copy the `pynvml.py` file from the "nvidia-ml-py" package (https://pypi.python.org/pypi/nvidia-ml-py) to `/usr/libexec/netdata/python.d/python_modules/`
+
+IMPORTANT: Version 7.352.0 of the nvidia-ml-py package does not work with Python >=3.2 -> see known bugs section of this readme.
+
 With default NetData installation copy the nv.chart.py script to `/usr/libexec/netdata/python.d/` and the nv.conf config file to `/etc/netdata/python.d/`.
 
-Edit the config file to set options for extracted information.
+Edit the config file to set options for legacy mode (old nvidia graphics cards).
 
 Then restart NetData to activate the plugin.
 
@@ -32,7 +34,7 @@ With older GPUs like my Nvidia GeForce 9600m gt, the core clock cannot be read b
 Set `legacy: True` in the `nv.conf` file to poll GPU and memory load via the nvidia-settings application (also installed with the Nvidia driver).
 
 
-### Displayed Date ###
+### Charts ###
 
 Depending on the Graphics card, these informations are extracted:
 
@@ -43,9 +45,9 @@ Depending on the Graphics card, these informations are extracted:
 - Fan speed
 - Clock frequency for GPU core, SM and memory
 
-Readouts for units (S-class systems) are integrated but not tested yet. This adds:
+Readouts for units (S-class systems) are integrated but not tested yet. These add:
 
-- intake, exhaust and board temperature
+- intake, exhaust and board temperatures
 - PSU current, voltage and power
 - Fan rpm
 
