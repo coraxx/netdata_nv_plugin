@@ -62,6 +62,8 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 
 ### Version ###
 
+v0.2 - code cleanup (thanks to @paulfantom for the feedback)
+
 v0.1 - initial release
 
 

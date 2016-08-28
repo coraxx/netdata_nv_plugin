@@ -37,7 +37,7 @@ DEALINGS IN THE SOFTWARE.
 # @Credits			:
 # @Maintainer		: Jan Arnold
 # @Date				: 2016/08/15
-# @Version			: 0.1
+# @Version			: 0.2
 # @Status			: stable
 # @Usage			: automatically processed by netdata
 # @Notes			: With default NetData installation put this file under
@@ -47,11 +47,12 @@ DEALINGS IN THE SOFTWARE.
 """
 # ======================================================================================================================
 from base import SimpleService
-import importlib
+from subprocess import Popen, PIPE
+from re import findall
 try:
 	import pynvml
 except Exception as e:
-	print("Please install pynvml: pip install nvidia-ml-py")
+	self.info("Please install pynvml: pip install nvidia-ml-py")
 	raise e
 
 ## Plugin settings
@@ -112,18 +113,7 @@ class Service(SimpleService):
 			self.legacy = self.configuration['legacy']
 			# self.legacy = True
 			if self.legacy == '': raise KeyError
-			if self.legacy is True:
-				self.debug('Legacy mode set to True')
-				if 'subprocess' in globals():
-					self.debug('subprocess module already loaded')
-				else:
-					self.debug('loading subprocess module')
-					globals()['subprocess'] = importlib.import_module('subprocess')
-				if 're' in globals():
-					self.debug('re module already loaded')
-				else:
-					self.debug('loading re module')
-					globals()['re'] = importlib.import_module('re')
+			if self.legacy is True: self.debug('Legacy mode set to True')
 		except KeyError:
 			self.legacy = False
 			self.debug("No legacy mode specified. Setting to 'False'")
@@ -134,6 +124,7 @@ class Service(SimpleService):
 			self.debug("Driver Version:", str(pynvml.nvmlSystemGetDriverVersion()))
 		except Exception as e:
 			self.error("pynvml could not be initialized", str(e))
+			pynvml.nvmlShutdown()
 			return False
 
 		## Get number of graphic cards
@@ -144,6 +135,7 @@ class Service(SimpleService):
 			self.debug("Device count", str(self.deviceCount))
 		except Exception as e:
 			self.error('Error getting number of Nvidia GPUs', str(e))
+			pynvml.nvmlShutdown()
 			return False
 
 		## Get graphic card names
@@ -212,7 +204,7 @@ class Service(SimpleService):
 				self.definitions['frequency']['lines'].append(['device_sm_clock_' + gpuIdx, 'sm [{0}]'.format(i), 'absolute'])
 
 		## Check if GPU Units are installed and add charts
-		if self.unitCount > 0:
+		if self.unitCount:
 			self.order.append('unit_fan')
 			self.order.append('unit_psu')
 			for i in range(self.unitCount):
@@ -232,14 +224,12 @@ class Service(SimpleService):
 							['unit_psu_current_' + gpuIdx, 'current (A) (unit {0})'.format(i), 'absolute'],
 							['unit_psu_power_' + gpuIdx, 'power (W) (unit {0})'.format(i), 'absolute'],
 							['unit_psu_voltage_' + gpuIdx, 'voltage (V) (unit {0})'.format(i), 'absolute']]}
-		# pynvml.nvmlShutdown()
 		return True
 
 	def _get_data(self):
-		# pynvml.nvmlInit()
 		data = {}
 
-		if self.deviceCount > 0:
+		if self.deviceCount:
 			for i in range(self.deviceCount):
 				gpuIdx = str(i)
 				handle = pynvml.nvmlDeviceGetHandleByIndex(i)
@@ -370,7 +360,7 @@ class Service(SimpleService):
 					data["device_ecc_errors_L1_CACHE_VOLATILE_CORRECTED_" + gpuIdx] = None
 
 		## Get unit (S-class Nvidia cards) data
-		if self.unitCount > 0:
+		if self.unitCount:
 			for i in range(self.unitCount):
 				gpuIdx = str(i)
 				handle = pynvml.nvmlUnitGetHandleByIndex(i)
@@ -437,7 +427,7 @@ class Service(SimpleService):
 		## Get data via legacy mode
 		if self.legacy:
 			try:
-				output = subprocess.Popen(
+				output = Popen(
 					[
 						"nvidia-settings",
 						"-q", "GPUUtilization",
@@ -446,9 +436,9 @@ class Service(SimpleService):
 						"-q", "TotalDedicatedGPUMemory",
 						"-q", "UsedDedicatedGPUMemory"
 					],
-					stdout=subprocess.PIPE).communicate()[0]
+					stdout=PIPE).communicate()[0]
 				if output == '':
-					raise Exception('Error in fetching data from nvidia-settings'+output)
+					raise Exception('Error in fetching data from nvidia-settings '+output)
 			except Exception as e:
 				self.error(str(e))
 				self.error('Setting legacy mode to False')
@@ -458,29 +448,28 @@ class Service(SimpleService):
 				gpuIdx = str(i)
 				# self.debug(data["device_load_gpu_" + gpuIdx])
 				if data["device_temp_" + gpuIdx] is None:
-					coreTemp = re.findall('GPUCoreTemp.*(gpu:\d*).*:\s(\d*)', output)[i][1]
+					coreTemp = findall('GPUCoreTemp.*(gpu:\d*).*:\s(\d*)', output)[i][1]
 					data["device_temp_" + gpuIdx] = int(coreTemp)
 					self.debug('Using legacy temp for GPU {0}: {1}'.format(gpuIdx, coreTemp))
 				if data["device_mem_used_" + gpuIdx] is None:
-					memUsed = re.findall('UsedDedicatedGPUMemory.*(gpu:\d*).*:\s(\d*)', output)[i][1]
+					memUsed = findall('UsedDedicatedGPUMemory.*(gpu:\d*).*:\s(\d*)', output)[i][1]
 					data["device_mem_used_" + gpuIdx] = int(memUsed)
 					self.debug('Using legacy mem_used for GPU {0}: {1}'.format(gpuIdx, memUsed))
 				if data["device_load_gpu_" + gpuIdx] is None:
-					gpu_util = re.findall('(gpu:\d*).*graphics=(\d*),.*?memory=(\d*)', output)[i][1]
+					gpu_util = findall('(gpu:\d*).*graphics=(\d*),.*?memory=(\d*)', output)[i][1]
 					data["device_load_gpu_" + gpuIdx] = int(gpu_util)
 					self.debug('Using legacy load_gpu for GPU {0}: {1}'.format(gpuIdx, gpu_util))
 				if data["device_load_mem_" + gpuIdx] is None:
-					mem_util = re.findall('(gpu:\d*).*graphics=(\d*),.*?memory=(\d*)', output)[i][2]
+					mem_util = findall('(gpu:\d*).*graphics=(\d*),.*?memory=(\d*)', output)[i][2]
 					data["device_load_mem_" + gpuIdx] = int(mem_util)
 					self.debug('Using legacy load_mem for GPU {0}: {1}'.format(gpuIdx, mem_util))
 				if data["device_core_clock_" + gpuIdx] is None:
-					clock_core = re.findall('GPUCurrentClockFreqs.*(gpu:\d*).*:\s(\d*),(\d*)', output)[i][1]
+					clock_core = findall('GPUCurrentClockFreqs.*(gpu:\d*).*:\s(\d*),(\d*)', output)[i][1]
 					data["device_core_clock_" + gpuIdx] = int(clock_core)
 					self.debug('Using legacy core_clock for GPU {0}: {1}'.format(gpuIdx, clock_core))
 				if data["device_mem_clock_" + gpuIdx] is None:
-					clock_mem = re.findall('GPUCurrentClockFreqs.*(gpu:\d*).*:\s(\d*),(\d*)', output)[i][2]
+					clock_mem = findall('GPUCurrentClockFreqs.*(gpu:\d*).*:\s(\d*),(\d*)', output)[i][2]
 					data["device_mem_clock_" + gpuIdx] = int(clock_mem)
 					self.debug('Using legacy mem_clock for GPU {0}: {1}'.format(gpuIdx, clock_mem))
 
-		# pynvml.nvmlShutdown()
 		return data
