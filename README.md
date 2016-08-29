@@ -28,7 +28,7 @@ To disable the nv plugin, edit `/etc/netdata/python.d.conf` and add `nv: no`.
 
 ### Installation Example ###
 
-Example for standard NetData installation under Ubuntu, working with Python >=3.2:
+Example for standard NetData installation under Ubuntu, working with Python >=2.6 and >=3.2:
 
 ```
 cd /tmp/
