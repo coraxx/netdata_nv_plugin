@@ -4,10 +4,11 @@
 NetData plugin for Nvidia GPU stats.
 
 Requirements:
-#	- Nvidia driver installed (this plugin needs the NVML library)
+#	- Nvidia driver installed (this plugin uses the NVML library)
 #	- nvidia-ml-py Python package (Python NVML wrapper) installed or copy the 'pynvml.py' file
 #	  from the 'nvidia-ml-py' package (https://pypi.python.org/pypi/nvidia-ml-py/7.352.0) to
-#	  '/usr/libexec/netdata/python.d/python_modules/'
+#	  '/usr/libexec/netdata/python.d/python_modules/'. For use with Python >=3.2 please se known bugs
+#	  in the README file.
 
 
 The MIT License (MIT)
@@ -37,7 +38,7 @@ DEALINGS IN THE SOFTWARE.
 # @Credits			:
 # @Maintainer		: Jan Arnold
 # @Date				: 2016/08/15
-# @Version			: 0.3
+# @Version			: 0.4
 # @Status			: stable
 # @Usage			: automatically processed by netdata
 # @Notes			: With default NetData installation put this file under
@@ -52,7 +53,12 @@ from re import findall
 try:
 	import pynvml
 except Exception as e:
-	self.info("Please install pynvml: pip install nvidia-ml-py")
+	if isinstance(e, ImportError):
+		self.error("Please install pynvml: pip install nvidia-ml-py")
+	if isinstance(e, SyntaxError):
+		self.error(
+			"Please fix line 1671 in pynvml.py file from the nvidia-ml-py package. 'print c_count.value' must be",
+			"'print(c_count.value)' to be compatible with Python >=3.2")
 	raise e
 
 ## Plugin settings
@@ -60,7 +66,7 @@ update_every = 1
 priority = 60000
 retries = 10
 
-ORDER = ['memory','load', 'ecc_errors', 'temperature', 'fan', 'frequency']
+ORDER = ['load', 'memory', 'frequency', 'temperature', 'fan', 'ecc_errors']
 
 CHARTS = {
 	'memory': {
@@ -104,24 +110,32 @@ class Service(SimpleService):
 		self.order = ORDER
 		self.definitions = CHARTS
 
-		## Real memory clock seems to be double. Set nvMenFactor = 2 for 'real' memory clock
-		self.nvMemFactor = 1
-
 	def check(self):
 		## Check legacy mode
 		try:
 			self.legacy = self.configuration['legacy']
-			# self.legacy = True
 			if self.legacy == '': raise KeyError
-			if self.legacy is True: self.debug('Legacy mode set to True')
+			if self.legacy is True: self.info('Legacy mode set to True')
 		except KeyError:
 			self.legacy = False
-			self.debug("No legacy mode specified. Setting to 'False'")
+			self.info("No legacy mode specified. Setting to 'False'")
+
+		## Real memory clock is double (DDR double data rate ram). Set nvMemFactor = 2 in conf for 'real' memory clock
+		try:
+			self.nvMemFactor = int(self.configuration['nvMemFactor'])
+			if self.nvMemFactor == '': raise KeyError
+			self.info("'nvMemFactor' set to:",str(self.nvMemFactor))
+		except Exception as e:
+			if isinstance(e, KeyError):
+				self.info("No 'nvMemFactor' configured. Setting to 1")
+			else:
+				self.error("nvMemFactor in config file is not an int. Setting 'nvMemFactor' to 1", str(e))
+			self.nvMemFactor = 1
 
 		## Initialize NVML
 		try:
 			pynvml.nvmlInit()
-			self.debug("Driver Version:", str(pynvml.nvmlSystemGetDriverVersion()))
+			self.info("Nvidia Driver Version:", str(pynvml.nvmlSystemGetDriverVersion()))
 		except Exception as e:
 			self.error("pynvml could not be initialized", str(e))
 			pynvml.nvmlShutdown()
@@ -146,7 +160,7 @@ class Service(SimpleService):
 				name = name + str(data["device_name_" + str(i)]) + " [{0}]".format(i)
 			else:
 				name = name + ' | ' + str(data["device_name_" + str(i)]) + " [{0}]".format(i)
-		self.debug(name)
+		self.info('Graphics Card(s) found:', name)
 		for chart in self.definitions:
 			self.definitions[chart]['options'][1] = self.definitions[chart]['options'][1] + ' for ' + name
 		## Dynamically add lines
