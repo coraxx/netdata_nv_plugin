@@ -1,6 +1,6 @@
 # README #
 
-## Table of content ##
+## Overview ##
 <!-- MarkdownTOC depth=0 -->
 
 - [About](#about)
@@ -25,7 +25,7 @@
 
 [NetData](https://github.com/firehol/netdata/) plugin that polls Nvidia GPU data.
 
-![nv plugin screenshot](http://semper.space/netdata_nv/screenshot01.png "Netdata nv plugin")
+![nv plugin screenshot](http://semper.space/netdata_nv/screenshot00.png "Netdata nv plugin")
 
 
 ## Requirements ##
@@ -172,7 +172,12 @@ Who do I talk to?
 
 ## Screenshots ##
 
-Legacy mode on MacBook Pro late 2008 running Ubuntu 16.04:
+* Nvidia GeForce GTX 980 equipped PC running Ubuntu 16.04:
+
+![nv plugin screenshot 1](http://semper.space/netdata_nv/screenshot01.png "Netdata nv plugin")
+
+
+* Nvidia GeForce 9600m gt/9400m with legacy mode on a MacBook Pro late 2008 running Ubuntu 16.04:
 
 ![nv plugin screenshot 2](http://semper.space/netdata_nv/screenshot02.png "Netdata nv plugin")
 
