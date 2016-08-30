@@ -453,7 +453,7 @@ class Service(SimpleService):
 					shell=False,
 					stdout=PIPE,stderr=PIPE).communicate()
 				output = repr(str(output))
-				if len(output) < 50:
+				if len(output) < 800:
 					raise Exception('Error in fetching data from nvidia-settings ' + output)
 				self.debug(str(error), output)
 			except Exception as e:
