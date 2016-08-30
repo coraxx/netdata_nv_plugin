@@ -17,6 +17,7 @@
 - [License](#license)
 - [Version History](#version-history)
 - [Contact](#contact)
+- [Screenshots](#screenshots)
 
 <!-- /MarkdownTOC -->
 
@@ -161,10 +162,17 @@ v0.1:
 * initial release
 
 
-
 ## Contact ##
 
 Who do I talk to?
 
 * Repo owner or admin
 * Other community or team contact
+
+
+## Screenshots ##
+
+Legacy mode on MacBook Pro late 2008 running Ubuntu 16.04:
+
+![nv plugin screenshot 2](http://semper.space/netdata_nv/screenshot02.png "Netdata nv plugin")
+
