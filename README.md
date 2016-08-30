@@ -1,5 +1,27 @@
 # README #
 
+## Table of content ##
+<!-- MarkdownTOC depth=0 -->
+
+- [About](#about)
+- [Requirements](#requirements)
+- [Installation](#installation)
+	- [General](#general)
+	- [Installation Example](#installation-example)
+- [Options](#options)
+	- [Memory Clock Factor](#memory-clock-factor)
+	- [Legacy Mode](#legacy-mode)
+- [Charts](#charts)
+- [Known Bugs/Issues](#known-bugsissues)
+- [FAQ](#faq)
+- [License](#license)
+- [Version History](#version-history)
+- [Contact](#contact)
+
+<!-- /MarkdownTOC -->
+
+## About ##
+
 [NetData](https://github.com/firehol/netdata/) plugin that polls Nvidia GPU data.
 
 ![nv plugin screenshot](http://semper.space/netdata_nv/screenshot01.png "Netdata nv plugin")
@@ -46,18 +68,29 @@ sudo cp netdata_nv_plugin/nv.conf /etc/netdata/python.d/
 ## Options ##
 
 Options are set in the `nv.conf` file.
-### nvMemFactor ###
+### Memory Clock Factor ###
 
-Set "nvMemFactor" to 2 if you want to display "the real clock speed". This is due to [DDR RAM](https://en.wikipedia.org/wiki/DDR_SDRAM#Double_data_rate_.28DDR.29_SDRAM_specification). Default is 1.
+Set `nvMemFactor: 2` in the `nv.conf` file if you want to display "the real clock speed". This is due to [DDR RAM](https://en.wikipedia.org/wiki/DDR_SDRAM#Double_data_rate_.28DDR.29_SDRAM_specification). Default is `1`.
+
 
 ### Legacy Mode ###
 
-**STILL UNDER CONSTRUCTION AND NOT OPERATIONAL AT THE MOMENT**
+With older GPUs like my Nvidia GeForce 9600m gt, the load and clock frequencies cannot be read by the NVML lib. Only temperature and memory usage is displayed.
 
-Set `legacy` to `True` to activate legacy mode for old nvidia graphics cards.
+Set `legacy: True` in the `nv.conf` file to poll GPU and memory load/frequency via the nvidia-settings application (also installed with the Nvidia driver).
 
-With older GPUs like my Nvidia GeForce 9600m gt, the core clock cannot be read by the NVML lib. Only temperature and memory usage is displayed.
-Set `legacy: True` in the `nv.conf` file to poll GPU and memory load via the nvidia-settings application (also installed with the Nvidia driver).
+*Tested under Ubuntu 16.04*
+
+**IMPORTANT:** This legacy mode only works with a running X session, so this will **not** work on headless clients. Also when the X session is not hosted by root, which is usually the case when running e.g. Ubuntu, you **must** allow `root` to connect to the X session. You can do that by executing this command in a terminal as the user of the X session (i.e. the user you are logged into your e.g. GNOME desktop environment):
+
+`xhost +local:root`
+
+Don't forget to restart NetData afterwards with e.g. `sudo service netdata restart`
+
+For the sake of completeness: If you want to disable the root access to the X session again, execute:
+
+`xhost -local:root`
+
 
 
 ## Charts ##
@@ -78,10 +111,21 @@ Readouts for units (S-class systems) are integrated but not tested yet. These ad
 - Fan rpm
 
 
-## Known Bugs ##
+## Known Bugs/Issues ##
 
-While making this plugin fit for Python 3 I encountered an old Python 2 style `print` in nvidia-ml-py's `pynvml.py` file. Line 1671 `print c_count.value` must be `print(c_count.value)` to be importable under Python 3!
+Bugs:
+* No known bugs at the moment
+
+Issues:
+* While making this plugin fit for Python 3 I encountered an old Python 2 style `print` in nvidia-ml-py's `pynvml.py` file. Line 1671 `print c_count.value` must be `print(c_count.value)` to be importable under Python 3!
 You can do this fix on your own or use the fixed version from this repo.
+
+
+## FAQ ##
+
+> Why does only one of my two whatever values show up in the whatever graph/chart?
+
+Probably because the one not drawn in the graph is zero. For example with two graphics cards where only one is under load, chances are that NetData only draws the one with load > 0%. As soon as the other one also returns values > 0 it will be drawn as well.
 
 
 ## License ##
@@ -95,7 +139,10 @@ The above copyright notice and this permission notice shall be included in all c
 
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-## Version ##
+## Version History ##
+
+v0.5:
+* fixed legacy mode (consult [Legacy Mode](#legacy-mode) for detailed information on usage)
 
 v0.4:
 * debug, info and error message cleanup (still a lot of debug messages since legacy mode is not working yet)
@@ -115,7 +162,9 @@ v0.1:
 
 
 
-## Who do I talk to? ##
+## Contact ##
+
+Who do I talk to?
 
 * Repo owner or admin
 * Other community or team contact

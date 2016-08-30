@@ -37,8 +37,8 @@ DEALINGS IN THE SOFTWARE.
 # @License			: MIT
 # @Credits			:
 # @Maintainer		: Jan Arnold
-# @Date				: 2016/08/15
-# @Version			: 0.4
+# @Date				: 2016/08/30
+# @Version			: 0.5
 # @Status			: stable
 # @Usage			: automatically processed by netdata
 # @Notes			: With default NetData installation put this file under
@@ -440,19 +440,22 @@ class Service(SimpleService):
 		## Get data via legacy mode
 		if self.legacy:
 			try:
-				output = str(Popen(
+				output, error = Popen(
 					[
 						"nvidia-settings",
+						"-c", ":0",
 						"-q", "GPUUtilization",
 						"-q", "GPUCurrentClockFreqs",
 						"-q", "GPUCoreTemp",
 						"-q", "TotalDedicatedGPUMemory",
 						"-q", "UsedDedicatedGPUMemory"
 					],
-					stdout=PIPE).communicate()[0])
-				if output == '':
+					shell=False,
+					stdout=PIPE,stderr=PIPE).communicate()
+				output = repr(str(output))
+				if len(output) < 50:
 					raise Exception('Error in fetching data from nvidia-settings ' + output)
-				self.debug(output)
+				self.debug(str(error), output)
 			except Exception as e:
 				self.error(str(e))
 				self.error('Setting legacy mode to False')
