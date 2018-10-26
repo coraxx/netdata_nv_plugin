@@ -47,7 +47,7 @@ DEALINGS IN THE SOFTWARE.
 # @Python_version	: 2.7.12 and 3.5.2
 """
 # ======================================================================================================================
-from base import SimpleService
+from bases.FrameworkServices.SimpleService import SimpleService
 from subprocess import Popen, PIPE
 from re import findall
 try:
