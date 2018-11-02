@@ -98,7 +98,7 @@ For the sake of completeness: If you want to disable the root access to the X se
 
 Depending on the Graphics card, these informations are extracted:
 
-- GPU and memory load
+- GPU, memory, encoder, and decoder load
 - Free and used memory
 - ECC errors (only for cards equipped with ECC memory e.g. Quadro cards)
 - Temperature
@@ -141,6 +141,10 @@ The above copyright notice and this permission notice shall be included in all c
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 ## Version History ##
+
+v0.6:
+* added encoder and decoder utilization
+* fixed memError/eccCounter assignment issue
 
 v0.5:
 * fixed legacy mode (consult [Legacy Mode](#legacy-mode) for detailed information on usage)
