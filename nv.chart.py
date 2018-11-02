@@ -269,7 +269,7 @@ class Service(SimpleService):
 					for memoryLocation in range(5):
 						for eccCounter in range(2):
 							for memError in range(2):
-								_memError[memErrorType[memError]] = pynvml.nvmlDeviceGetMemoryErrorCounter(handle,eccCounter,memError,memoryLocation)
+								_memError[memErrorType[memError]] = pynvml.nvmlDeviceGetMemoryErrorCounter(handle,memError,eccCounter,memoryLocation)
 							_eccCounter[eccCounterType[eccCounter]] = _memError
 						eccErrors[memoryLocationType[memoryLocation]] = _eccCounter
 				except Exception as e:
