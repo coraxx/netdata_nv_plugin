@@ -177,6 +177,14 @@ class Service(SimpleService):
 				self.definitions['load']['lines'].append(['device_load_gpu_' + gpuIdx, 'gpu [{0}]'.format(i), 'absolute'])
 				self.definitions['load']['lines'].append(['device_load_mem_' + gpuIdx, 'memory [{0}]'.format(i), 'absolute'])
 
+            ## Encoder Utilization
+			if data['device_load_enc_' + gpuIdx] is not None:
+				self.definitions['load']['lines'].append(['device_load_enc_' + gpuIdx, 'enc [{0}]'.format(i), 'absolute'])
+
+            ## Decoder Utilization
+			if data['device_load_dec_' + gpuIdx] is not None:
+				self.definitions['load']['lines'].append(['device_load_dec_' + gpuIdx, 'dec [{0}]'.format(i), 'absolute'])
+
 			## ECC errors
 			if data['device_ecc_errors_L1_CACHE_VOLATILE_CORRECTED_' + gpuIdx] is not None:
 				self.definitions['ecc_errors']['lines'].append(['device_ecc_errors_L1_CACHE_VOLATILE_CORRECTED_' + gpuIdx, 'L1 Cache Volatile Corrected [{0}]'.format(i), 'absolute'])
@@ -290,7 +298,7 @@ class Service(SimpleService):
 					self.debug(str(e))
 					fanspeed = None
 
-				## Utilization
+				## GPU and Memory Utilization
 				try:
 					util = pynvml.nvmlDeviceGetUtilizationRates(handle)
 					gpu_util = util.gpu
@@ -299,6 +307,22 @@ class Service(SimpleService):
 					self.debug(str(e))
 					gpu_util = None
 					mem_util = None
+
+				## Encoder Utilization
+				try:
+					encoder = pynvml.nvmlDeviceGetEncoderUtilization(handle)
+					enc_util = encoder[0]
+				except Exception as e:
+					self.debug(str(e))
+					enc_util = None
+
+				## Decoder Utilization
+				try:
+					decoder = pynvml.nvmlDeviceGetDecoderUtilization(handle)
+					dec_util = decoder[0]
+				except Exception as e:
+					self.debug(str(e))
+					dec_util = None
 
 				## Clock frequencies
 				try:
@@ -334,6 +358,12 @@ class Service(SimpleService):
 
 				self.debug(str(name), "Load MEM  :", str(mem_util), '%')
 				data["device_load_mem_" + gpuIdx] = mem_util
+
+				self.debug(str(name), "Load ENC  :", str(enc_util), '%')
+				data["device_load_enc_" + gpuIdx] = enc_util
+
+				self.debug(str(name), "Load DEC  :", str(dec_util), '%')
+				data["device_load_dec_" + gpuIdx] = dec_util
 
 				self.debug(str(name), "Core clock:", str(clock_core), 'MHz')
 				data["device_core_clock_" + gpuIdx] = clock_core
