@@ -37,8 +37,8 @@ DEALINGS IN THE SOFTWARE.
 # @License			: MIT
 # @Credits			:
 # @Maintainer		: Jan Arnold
-# @Date				: 2016/08/30
-# @Version			: 0.5
+# @Date				: 2018/11/02
+# @Version			: 0.6
 # @Status			: stable
 # @Usage			: automatically processed by netdata
 # @Notes			: With default NetData installation put this file under
