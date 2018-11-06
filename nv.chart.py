@@ -256,7 +256,7 @@ class Service(SimpleService):
 				handle = pynvml.nvmlDeviceGetHandleByIndex(i)
 				name = pynvml.nvmlDeviceGetName(handle)
 				brand = pynvml.nvmlDeviceGetBrand(handle)
-				brands = ['Unknown', 'Quadro', 'Tesla', 'NVS', 'Grid', 'GeForce']
+				brands = ['Unknown', 'Quadro', 'Tesla', 'NVS', 'Grid', 'GeForce', 'Titan']
 
 				### Get data ###
 				## Memory usage
