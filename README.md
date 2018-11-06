@@ -37,6 +37,7 @@
 ## Installation ##
 
 ### General ###
+The path to the NetData installation refered to in this readme is `/usr/libexec/netdata/`. For some NetData installations the path may vary, e.g. `/usr/lib/x86_64-linux-gnu/netdata`.
 
 Install the nvidia-ml-py Python package via `pip install nvidia-ml-py` or copy the `pynvml.py` file from the "nvidia-ml-py" package (https://pypi.python.org/pypi/nvidia-ml-py) to `/usr/libexec/netdata/python.d/python_modules/`.
 
