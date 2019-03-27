@@ -70,7 +70,7 @@ ORDER = ['load', 'memory', 'frequency', 'temperature', 'fan', 'ecc_errors']
 
 CHARTS = {
 	'memory': {
-		'options': [None, 'Memory', 'MB', 'Memory', 'nv.memory', 'line'],
+		'options': [None, 'Memory', 'MB', 'Memory', 'nv.memory', 'stacked'],
 		'lines': [
 			# generated dynamically
 		]},
@@ -168,8 +168,8 @@ class Service(SimpleService):
 			gpuIdx = str(i)
 			## Memory
 			if data['device_mem_used_'+str(i)] is not None:
-				self.definitions['memory']['lines'].append(['device_mem_used_' + gpuIdx, 'used [{0}]'.format(i), 'absolute', 1, 1024**2])
 				self.definitions['memory']['lines'].append(['device_mem_free_' + gpuIdx, 'free [{0}]'.format(i), 'absolute', 1, 1024**2])
+				self.definitions['memory']['lines'].append(['device_mem_used_' + gpuIdx, 'used [{0}]'.format(i), 'absolute', 1, 1024**2])
 			# self.definitions['memory']['lines'].append(['device_mem_total_' + gpuIdx, 'GPU:{0} total'.format(i), 'absolute', -1, 1024**2])
 
 			## Load/usage
