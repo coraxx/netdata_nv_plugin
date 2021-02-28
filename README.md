@@ -57,7 +57,7 @@ Example for standard NetData installation under Ubuntu, working with Python >=2.
 ```
 cd /tmp/
 
-git clone https://github.com/Splo0sh/netdata_nv_plugin --depth 1
+git clone https://github.com/coraxx/netdata_nv_plugin --depth 1
 
 sudo cp netdata_nv_plugin/nv.chart.py /usr/libexec/netdata/python.d/
 
