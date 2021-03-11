@@ -256,7 +256,6 @@ class Service(SimpleService):
 				handle = pynvml.nvmlDeviceGetHandleByIndex(i)
 				name = pynvml.nvmlDeviceGetName(handle)
 				brand = pynvml.nvmlDeviceGetBrand(handle)
-				brands = ['Unknown', 'Quadro', 'Tesla', 'NVS', 'Grid', 'GeForce', 'Titan']
 
 				### Get data ###
 				## Memory usage
@@ -339,7 +338,7 @@ class Service(SimpleService):
 				self.debug("Device", gpuIdx, ":", str(name))
 				data["device_name_" + gpuIdx] = name
 
-				self.debug("Brand:", str(brands[brand]))
+				self.debug("Brand:", str(brand))
 
 				self.debug(str(name), "Temp      :", str(temp))
 				data["device_temp_" + gpuIdx] = temp
